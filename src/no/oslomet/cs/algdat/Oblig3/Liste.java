@@ -1,5 +1,7 @@
 package no.oslomet.cs.algdat.Oblig3;
 
+import no.oslomet.cs.algdat.Beholder;
+
 import java.util.Iterator;
 
 public interface Liste<T> extends Beholder<T> {
