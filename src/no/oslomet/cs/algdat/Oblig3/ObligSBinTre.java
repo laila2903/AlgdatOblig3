@@ -176,7 +176,23 @@ public class ObligSBinTre<T> implements Beholder<T>
     @Override
     public void nullstill()
     {
-        throw new UnsupportedOperationException("Ikke kodet ennå!");
+        if (!tom()) nullstill(rot);  // nullstiller
+        rot = null; antall = 0;      // treet er nå tomt
+    }
+
+    private void nullstill(Node<T> p)
+    {
+        if (p.venstre != null)
+        {
+            nullstill(p.venstre);      // venstre subtre
+            p.venstre = null;          // nuller peker
+        }
+        if (p.høyre != null)
+        {
+            nullstill(p.høyre);        // høyre subtre
+            p.høyre = null;            // nuller peker
+        }
+        p.verdi = null;              // nuller verdien
     }
 
     private static <T> Node<T> nesteInorden(Node<T> p)
