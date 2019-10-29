@@ -6,8 +6,7 @@ import no.oslomet.cs.algdat.Beholder;
 
 import java.util.*;
 
-public class ObligSBinTre<T> implements Beholder<T>
-{
+public class ObligSBinTre<T> implements Beholder<T> {
     private static final class Node<T>   // en indre nodeklasse
     {
         private T verdi;                   // nodens verdi
@@ -15,10 +14,10 @@ public class ObligSBinTre<T> implements Beholder<T>
         private Node<T> forelder;          // forelder
 
         // konstruktør
-        private Node(T verdi, Node<T> v, Node<T> h, Node<T> forelder)
-        {
+        private Node(T verdi, Node<T> v, Node<T> h, Node<T> forelder) {
             this.verdi = verdi;
-            venstre = v; høyre = h;
+            venstre = v;
+            høyre = h;
             this.forelder = forelder;
         }
 
@@ -28,7 +27,9 @@ public class ObligSBinTre<T> implements Beholder<T>
         }
 
         @Override
-        public String toString(){ return "" + verdi;}
+        public String toString() {
+            return "" + verdi;
+        }
 
     } // class Node
 
@@ -46,8 +47,7 @@ public class ObligSBinTre<T> implements Beholder<T>
     }
 
     @Override
-    public boolean leggInn(T verdi)
-    {
+    public boolean leggInn(T verdi) {
         Objects.requireNonNull(verdi, "Ulovlig med nullverdier!");
 
         Node<T> p = rot, q = null;               // p starter i roten
@@ -56,13 +56,13 @@ public class ObligSBinTre<T> implements Beholder<T>
         while (p != null)       // fortsetter til p er ute av treet
         {
             q = p;                                 // q er forelder til p
-            cmp = comp.compare(verdi,p.verdi);     // bruker komparatoren
+            cmp = comp.compare(verdi, p.verdi);     // bruker komparatoren
             p = cmp < 0 ? p.venstre : p.høyre;     // flytter p
         }
 
         // p er nå null, dvs. ute av treet, q er den siste vi passerte
 
-        p = new Node<>(verdi,q);                   // oppretter en ny node
+        p = new Node<>(verdi, q);                   // oppretter en ny node
 
         if (q == null) rot = p;                  // p blir rotnode
         else if (cmp < 0) q.venstre = p;         // venstre barn til q
@@ -73,14 +73,12 @@ public class ObligSBinTre<T> implements Beholder<T>
     }
 
     @Override
-    public boolean inneholder(T verdi)
-    {
+    public boolean inneholder(T verdi) {
         if (verdi == null) return false;
 
         Node<T> p = rot;
 
-        while (p != null)
-        {
+        while (p != null) {
             int cmp = comp.compare(verdi, p.verdi);
             if (cmp < 0) p = p.venstre;
             else if (cmp > 0) p = p.høyre;
@@ -91,73 +89,88 @@ public class ObligSBinTre<T> implements Beholder<T>
     }
 
     @Override
-    public boolean fjern(T verdi)
-    {
-        if (verdi == null) return false;  // treet har ingen nullverdier
+    public boolean fjern(T verdi) {
 
-        Node<T> p = rot, q = null;   // q skal være forelder til p
+        if(verdi == null) return false;
 
-        while (p != null)            // leter etter verdi
-        {
-            int cmp = comp.compare(verdi,p.verdi);      // sammenligner
-            if (cmp < 0) { q = p; p = p.venstre; }      // går til venstre
-            else if (cmp > 0) { q = p; p = p.høyre; }   // går til høyre
-            else break;    // den søkte verdien ligger i p
+        Node<T> p = rot;
+
+        while(p!=null){
+            int cmp = comp.compare(verdi,p.verdi);
+
+            if(cmp < 0) p=p.venstre;
+            else if(cmp > 0) p=p.høyre;
+            else break;
         }
-        if (p == null) return false;   // finner ikke verdi
 
-        if (p.venstre == null || p.høyre == null)  // Tilfelle 1) og 2)
-        {
-            Node<T> b = p.venstre != null ? p.venstre : p.høyre;  // b for barn
-            if (p == rot) rot = b;
-            else if (p == q.venstre) q.venstre = b;
-            else q.høyre = b;
-        }
-        else  // Tilfelle 3)
-        {
-            Node<T> s = p, r = p.høyre;   // finner neste i inorden
-            while (r.venstre != null)
-            {
-                s = r;    // s er forelder til r
-                r = r.venstre;
+        if (p==null) return false;
+
+        if (p.venstre==null || p.høyre==null) {
+
+            Node<T> b = (p.venstre!=null) ? p.venstre : p.høyre;
+
+            if (p == rot) {
+                rot =  b;
+                if(b!=null) b.forelder=null;
             }
+            else if (p==p.forelder.venstre) {
+                if(b!=null)b.forelder = p.forelder;
+                p.forelder.venstre = b;
+            } else {
 
-            p.verdi = r.verdi;   // kopierer verdien i r til p
+                if(b!=null)b.forelder = p.forelder;
+                p.forelder.høyre = b;
+            }
+        }
+        else {
 
-            if (s != p) s.venstre = r.høyre;
-            else s.høyre = r.høyre;
+            Node<T> r = p.høyre;
+            while (r.venstre != null) r = r.venstre;
+            p.verdi = r.verdi;
+
+            if(r.forelder!=p) {
+                Node<T> q = r.forelder;
+                q.venstre = r.høyre;
+                if(q.venstre!=null)q.venstre.forelder = q;
+            }
+            else{
+                p.høyre =  r.høyre;
+                if(p.høyre !=null) p.høyre.forelder = p;
+
+            }
         }
 
-        antall--;   // det er nå én node mindre i treet
+        antall--;
         return true;
     }
 
     public int fjernAlle(T verdi)
     {
-        int verdiAntall = 0;
-        while (fjern(verdi)) verdiAntall++;
-        return verdiAntall;
+        int i = 0;
+        boolean fjernet = true;
+        while(fjernet!=false){
+            if(fjern(verdi))
+                i++;
+            else
+                fjernet = false;
+        }
+        return i;
     }
 
     @Override
-    public int antall()
-    {
+    public int antall() {
         return antall;
     }
 
-    public int antall(T verdi)
-    {
+    public int antall(T verdi) {
         Node<T> p = rot;
         int antallVerdi = 0;
 
-        while (p != null)
-        {
-            int cmp = comp.compare(verdi,p.verdi);
+        while (p != null) {
+            int cmp = comp.compare(verdi, p.verdi);
             if (cmp < 0) {
                 p = p.venstre;
-            }
-            else
-            {
+            } else {
                 if (cmp == 0) {
                     antallVerdi++;
                 }
@@ -168,12 +181,10 @@ public class ObligSBinTre<T> implements Beholder<T>
     }
 
     @Override
-    public boolean tom()
-    {
+    public boolean tom() {
         return antall == 0;
     }
 
-    @Override
     public void nullstill()
     {
         if (!tom()) nullstill(rot);  // nullstiller
@@ -195,30 +206,119 @@ public class ObligSBinTre<T> implements Beholder<T>
         p.verdi = null;              // nuller verdien
     }
 
-    private static <T> Node<T> nesteInorden(Node<T> p)
-    {
-        throw new UnsupportedOperationException("Ikke kodet ennå!");
+
+    private static <T> Node<T> førsteInorden(Node<T> p) {
+        while (p.venstre != null) p = p.venstre;
+        return p;
     }
+
+    private static <T> Node<T> nesteInorden(Node<T> p) {
+        if (p.høyre != null)  // p har høyre barn
+        {
+            return førsteInorden(p.høyre);
+        } else  // må gå oppover i treet
+        {
+            while (p.forelder != null && p.forelder.høyre == p) {
+                p = p.forelder;
+            }
+            return p.forelder;
+        }
+    }
+
 
     @Override
-    public String toString()
-    {
-        throw new UnsupportedOperationException("Ikke kodet ennå!");
+    public String toString() {
+        StringBuilder s = new StringBuilder();
+        s.append("[");
+        if (!tom()) {
+            Node<T> p = førsteInorden(rot);
+            s.append(førsteInorden(rot).verdi);
+            while (nesteInorden(p) != null) {
+                s.append(", ");
+                s.append(nesteInorden(p).verdi);
+                p = nesteInorden(p);
+            }
+        }
+        s.append("]");
+        return s.toString();
     }
 
-    public String omvendtString()
-    {
-        throw new UnsupportedOperationException("Ikke kodet ennå!");
+
+
+    public String omvendtString(){
+        StringBuilder s = new StringBuilder();
+        s.append("[");
+        if (!tom()) {
+            Stack stakk = new Stack();
+            Node<T> p = førsteInorden(rot);
+            stakk.push(""+førsteInorden(rot).verdi);
+            while (nesteInorden(p) != null) {
+                stakk.push(""+nesteInorden(p).verdi);
+                p = nesteInorden(p);
+            }
+            for (int i = 0; i < stakk.size();i++) {
+                s.append(stakk.pop());
+                s.append(", ");
+            }
+            s.append(stakk.pop());
+            s.append(", ");
+            s.append(stakk.pop());
+        }
+        s.append("]");
+        return s.toString();
     }
 
     public String høyreGren()
     {
-        throw new UnsupportedOperationException("Ikke kodet ennå!");
+        StringBuilder s = new StringBuilder();
+        s.append("[");
+        if(rot != null){
+            Node p = rot;
+            s.append(p);
+            while(p.høyre != null || p.venstre!=null ){
+                if(p.høyre != null)
+                    p = p.høyre;
+                else p = p.venstre;
+                s.append(",").append(" ").append(p);
+            }
+        }
+        s.append("]");
+        return s.toString();
     }
 
     public String lengstGren()
     {
-        throw new UnsupportedOperationException("Ikke kodet ennå!");
+        Stack<Node> stakk=new Stack<Node>();
+        Node<T> p=rot;
+        stakk.push(p);
+        while(!stakk.isEmpty()){
+            System.out.println(stakk.toString());
+            p=stakk.remove(0);
+
+
+            if(p.høyre!=null){
+                stakk.add(p.høyre);
+            }
+            if(p.venstre!=null){
+                stakk.add(p.venstre);
+            }
+        }
+        T verdi=p.verdi;
+        StringBuilder s=new StringBuilder();
+        Queue<Node> kø=new LinkedList<Node>();
+        kø.add(p);
+        while(p.forelder!=null){
+            p=p.forelder;
+            kø.add(p);
+        }
+        s.append(kø.remove());
+        while(!kø.isEmpty()){
+            s.append(",").append(kø.remove());
+        }
+        s.append("]");
+
+
+        return s.toString();
     }
 
     public String[] grener()
@@ -271,13 +371,23 @@ public class ObligSBinTre<T> implements Beholder<T>
             throw new UnsupportedOperationException("Ikke kodet ennå!");
         }
 
+
+
+
     } // BladnodeIterator
+
+
+
+
+
+
 
     public static void main(String[] args) {
         Integer[] a= {4,7,2,9,4,10,8,7,4,6,1};
 
         ObligSBinTre<Integer> tre = new ObligSBinTre<>(Comparator.naturalOrder());
         for (int verdi: a) tre.leggInn(verdi);
+
 
         System.out.println(tre.fjernAlle(4));
         System.out.println(tre.fjernAlle(7));
