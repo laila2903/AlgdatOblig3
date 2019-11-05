@@ -323,18 +323,105 @@ public class ObligSBinTre<T> implements Beholder<T> {
 
     public String[] grener()
     {
-        throw new UnsupportedOperationException("Ikke kodet ennå!");
+        Liste<String> liste = new TabellListe<>();
+        StringBuilder s = new StringBuilder("[");
+        if (!tom()) grener(rot, liste, s);
+
+        String[] grener = new String[liste.antall()];           // oppretter tabell
+
+        int i = 0;
+        for (String gren : liste)
+            grener[i++] = gren;                   // fra liste til tabell
+
+        return grener;                          // returnerer tabellen
     }
+    private void grener(Node<T> p, Liste<String> liste, StringBuilder s)
+    {
+        T verdi = p.verdi;
+        int k = verdi.toString().length(); // lengden på verdi
+
+        if (p.høyre == null && p.venstre == null)  // bladnode
+        {
+            liste.leggInn(s.append(verdi).append(']').toString());
+
+            // må fjerne det som ble lagt inn sist - dvs. k + 1 tegn
+            s.delete(s.length() - k - 1, s.length());
+        }
+        else
+        {
+            s.append(p.verdi).append(',').append(' ');  // legger inn k + 2 tegn
+            if (p.venstre != null) grener(p.venstre, liste, s);
+            if (p.høyre != null) grener(p.høyre, liste, s);
+            s.delete(s.length() - k - 2, s.length());   // fjerner k + 2 tegn
+        }
+    }
+
 
     public String bladnodeverdier()
     {
-        throw new UnsupportedOperationException("Ikke kodet ennå!");
+        Node<T> p=rot;
+        StringBuilder s = new StringBuilder("[");
+        if(p==null){
+            s.append("]");
+            return s.toString();
+        }
+        if (!tom()){
+            bladnodeverdier(rot,s);
+        }
+        s.setLength(s.length()-2);
+        s.append("]");
+        return s.toString();
+    }
+    public String bladnodeverdier(Node<T> p,StringBuilder s){
+        if(p==null){
+            s.append("[]");
+            return s.toString();
+        }
+        if (p.venstre == null && p.høyre == null) {
+            s.append(p.verdi);
+            s.append(", ");
+        }
+        if(p.venstre!=null){
+            bladnodeverdier(p.venstre,s);
+        }
+        if(p.høyre!=null){
+            bladnodeverdier(p.høyre,s);
+        }
+
+        return s.toString();
+    }
+    public String postString(){
+        StringBuilder ut=new StringBuilder();
+        Node<T> p=rot;
+        if(p==null){
+            ut.append("[]");
+            return ut.toString();
+        }
+        Stack<Node<T>> stakk=new Stack<>();
+        stakk.push(p);
+        Stack<T>utStack=new Stack<>();
+        while(!stakk.isEmpty()){
+            Node denne=stakk.pop();
+            utStack.push((T) denne.verdi);
+            if (denne.venstre != null) {
+                stakk.push(denne.venstre);
+            }
+
+            if (denne.høyre != null) {
+                stakk.push(denne.høyre);
+            }
+        }
+        ut.append("[");
+        while (!utStack.empty()) {
+            ut.append(utStack.pop());
+            ut.append(", ");
+        }
+
+        ut.setLength(ut.length()-2);
+        ut.append("]");
+        return ut.toString();
     }
 
-    public String postString()
-    {
-        throw new UnsupportedOperationException("Ikke kodet ennå!");
-    }
 
     @Override
     public Iterator<T> iterator()
@@ -347,10 +434,34 @@ public class ObligSBinTre<T> implements Beholder<T> {
         private Node<T> p = rot, q = null;
         private boolean removeOK = false;
         private int iteratorendringer = endringer;
+        private Stakk<Node<T>> s=new TabellStakk<>();
+
 
         private BladnodeIterator()  // konstruktør
         {
-            throw new UnsupportedOperationException("Ikke kodet ennå!");
+            if(rot==null){
+                throw new NoSuchElementException();
+            }
+            p=forsteVenstre(rot);
+
+        }
+        private Node<T> forsteVenstre(Node <T> p){
+            while(p!=null){
+                if(p.venstre ==null &&p.høyre==null){
+                    break;
+                }
+                if(p.venstre!=null){
+                    if(p.høyre!=null){
+                        s.leggInn(p.høyre);
+                    }
+                    p=p.venstre;
+                }
+                else{
+                    p=p.høyre;
+                }
+
+            }
+            return p;
         }
 
         @Override
@@ -359,44 +470,86 @@ public class ObligSBinTre<T> implements Beholder<T> {
             return p != null;  // Denne skal ikke endres!
         }
 
+
         @Override
         public T next()
         {
-            throw new UnsupportedOperationException("Ikke kodet ennå!");
+            T verdi=p.verdi;
+            if(!s.tom()){
+                p=forsteVenstre(s.taUt());
+                return verdi;
+            }
+            else{
+                p=null;
+            }
+
+            q=p;
+
+            while(hasNext()){
+                p=nesteInorden(p);
+
+                if(p==null){
+                    return verdi;
+                }
+                else if(p.venstre==null && p.høyre==null){
+                    return verdi;
+                }
+                else if(p.venstre!=null &&p.høyre==null){
+                    return p.venstre.verdi;
+                }
+                else if(p.høyre!=null &&p.venstre==null){
+                    return p.høyre.verdi;
+                }
+
+            }
+            removeOK=true;
+            return verdi;
         }
 
         @Override
         public void remove()
         {
-            throw new UnsupportedOperationException("Ikke kodet ennå!");
+
+            if(q.forelder==null) {
+                rot = null;
+            }
+            else{
+                if(q.forelder.venstre==q){
+                    q.forelder.venstre=null;
+                }
+                else{
+                    q.forelder.høyre=null;
+                }
+            }
+            antall--;
+            endringer++;
+            iteratorendringer++;
+
         }
-
-
-
 
     } // BladnodeIterator
 
-
-
-
-
-
-
     public static void main(String[] args) {
-        Integer[] a= {4,7,2,9,4,10,8,7,4,6,1};
-
-        ObligSBinTre<Integer> tre = new ObligSBinTre<>(Comparator.naturalOrder());
-        for (int verdi: a) tre.leggInn(verdi);
+        no.oslomet.cs.algdat.Oblig3.ObligSBinTre<Integer> tre =
+                new ObligSBinTre<>(Comparator.naturalOrder());
 
 
-        System.out.println(tre.fjernAlle(4));
-        System.out.println(tre.fjernAlle(7));
-        System.out.println(tre.fjernAlle(8));
+        int[] a = {5, 2, 8, 1, 4, 6, 9, 3, 7};
+        for (int k : a) tre.leggInn(k);
 
-        System.out.println(tre.antall());
-
+        Iterator<Integer> i = tre.iterator();
+        List<Integer> liste = new ArrayList<>();
+        for (Integer verdi : tre) {
+            liste.add(verdi);
+        }
+        String s = liste.toString();
+        System.out.println(s.toString());
+        tre.nullstill();
+        tre.leggInn(1);
+        i = tre.iterator();
+        tre.leggInn(2);
+        System.out.println(i.next());
 
 
     }
-
 } // ObligSBinTre
