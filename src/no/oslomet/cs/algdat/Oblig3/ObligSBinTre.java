@@ -268,31 +268,43 @@ public class ObligSBinTre<T> implements Beholder<T> {
         return s.toString();
     }
 
-    public String høyreGren()
-    {
-        StringBuilder s = new StringBuilder();
-        s.append("[");
-        if(rot != null){
-            Node p = rot;
-            s.append(p);
-            while(p.høyre != null || p.venstre!=null ){
-                if(p.høyre != null)
-                    p = p.høyre;
-                else p = p.venstre;
-                s.append(",").append(" ").append(p);
-            }
+    public String høyreGren() {
+        List<T> ut=new ArrayList<>();
+        Queue<Node> queue=new LinkedList<>();
+        if(rot==null){
+            return ut.toString();
         }
-        s.append("]");
-        return s.toString();
+        queue.offer(rot);
+        while(queue.size()!=0){
+            int str=queue.size();
+            for(int i=0;i<str;i++){
+                Node denne=queue.poll();
+                if(i==0){
+                    ut.add((T) denne.verdi);
+                }
+                if(denne.høyre!=null){
+                    queue.offer(denne.høyre);
+                }
+                if(denne.venstre!=null){
+                    queue.offer(denne.venstre);
+                }
+            }
+
+        }
+        return ut.toString();
     }
 
-    public String lengstGren()
-    {
+    public String lengstGren() {
         Stack<Node> stakk=new Stack<Node>();
         Node<T> p=rot;
+        StringBuilder s=new StringBuilder();
+
+        if(p==null){
+            s.append("[]");
+            return s.toString();
+        }
         stakk.push(p);
         while(!stakk.isEmpty()){
-            System.out.println(stakk.toString());
             p=stakk.remove(0);
 
 
@@ -304,20 +316,18 @@ public class ObligSBinTre<T> implements Beholder<T> {
             }
         }
         T verdi=p.verdi;
-        StringBuilder s=new StringBuilder();
-        Queue<Node> kø=new LinkedList<Node>();
+        s.append("[");
+        Stack<Node> kø=new Stack<Node>();
         kø.add(p);
         while(p.forelder!=null){
             p=p.forelder;
             kø.add(p);
         }
-        s.append(kø.remove());
+        s.append(kø.pop());
         while(!kø.isEmpty()){
-            s.append(",").append(kø.remove());
+            s.append(", ").append(kø.pop());
         }
         s.append("]");
-
-
         return s.toString();
     }
 
