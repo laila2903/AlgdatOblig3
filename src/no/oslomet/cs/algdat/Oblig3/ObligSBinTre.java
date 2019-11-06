@@ -656,6 +656,7 @@ public class ObligSBinTre<T> implements Beholder<T> {
             antall--;
             endringer++;
             iteratorendringer++;
+            //Oppdaterer alle traverseringer
 
         }
 
