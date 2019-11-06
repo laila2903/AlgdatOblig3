@@ -99,7 +99,6 @@ public class ObligSBinTre<T> implements Beholder<T> {
     }
 
     @Override
-    //Skriv om denne
     public boolean fjern(T verdi)  // hører til klassen SBinTre
     {
         if (verdi == null) return false;  // treet har ingen nullverdier
@@ -337,8 +336,6 @@ public class ObligSBinTre<T> implements Beholder<T> {
             p = nesteInorden(p);
             s.append(", ");
         }
-
-
         s.setLength(s.length() - 2);// For å fjerne komma
         s.append(']');
         return s.toString();
@@ -348,11 +345,9 @@ public class ObligSBinTre<T> implements Beholder<T> {
         if (tom()) return "[]";
         StringBuilder s = new StringBuilder();   // StringBuilder
         s.append('[');                           // starter med [
-
         Node<T> p = rot;
         while (p.høyre != null) p = p.høyre;
         s.append(p.verdi);
-
         while (true) {
             if (p.venstre != null) {
                 p = p.venstre;
